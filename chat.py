@@ -49,14 +49,74 @@ class RemoveCapsPreserveNNP:
         data = (' '.join(words))
         results.append(data)
         return data
+def getNextWeekday(weekday):
+	'''Expects weekday to be an integer from 0-6 where 0 represents Monday and 6 Sunday
+	'''
+	todayDay = datetime.today()
+	todayWeekday = todayDay.weekday()
+	diff = weekday - todayWeekday
+	if diff == 0:
+		return todayDay + datetime.timedelta(days=7)
+	else
+		return  todayDay + datetime.timedelta(days=diff)
 
+def getDates(startDate, endDate):
+	'''Returns a list of dates from the start date (inclusive) to the end date (noninclusive)
+	'''
+	delta = endDate - startDate
+	return([startDate + timedelta(days=i) for i in range(delta.days)])
+
+def parseTimeWords(time_words):
+	weekdays = {
+		"monday"	:	0,
+		"tuesday"	:	1,
+		"wednesday"	:	2,
+		"thursday"	:	3,
+		"friday"	:	4,
+		"saturday"	:	5,
+		"sunday"	:	6,
+	}
+	{
+		"yesterday" :	datetime.today() + timedelta(days=-1)
+		"today" 	:	datetime.today()
+		"tonight"	:	datetime.today()
+		"tomorrow morning"	:	datetime.today + timedelta(days=1)
+		"tomorrow" 			:	datetime.today() + timedelta(days=1)
+		"Monday"			:	getNextWeekday(weekdays["monday"])
+		"Tuesday"			:	getNextWeekday(weekdays["tuesday"])
+		"Wednesday"			:	getNextWeekday(weekdays["wednesday"])
+		"Thursday"			:	getNextWeekday(weekdays["thursday"])
+		"Friday"			:	getNextWeekday(weekdays["friday"])
+		"Saturday"			:	getNextWeekday(weekdays["saturday"])
+		"Sunday"			:	getNextWeekday(weekdays["sunday"])
+		"this weekend"		:	with getNextWeekday(weekdays["friday"]) as firstDate: getDates(firstDate, firstDate + timedelta(days=3))
+		"next week"			:	with getNextWeekday(weekdays["monday"]) as firstDate: getDates(firstDate, firstDate + timedelta(days=7))	
+		"next month"
+		"next year"
+		"this week"			:	
+		"this month"
+		"this year"
+		"last week"			:	
+		"last month"
+		"last year"
+	}
 def interpretMessage(word_list):
 	print(word_list)
-	if (any(s in word_list for s in ["weather","rain","sun","temperature"])):
+	if (any(s in word_list for s in ["weather","rain","sun","hot","cold","warm","snow","humid","pollen","temperature"])):
 		print("I believe you asked me about the weather just now.")
 	elif (any(s in word_list for s in ["calendar","agenda"])):
 		print("I will try to look at your schedule.")
+
+
+
+def greet():
+	greeting_list = [
+		"Good morning, sir",
+		"How are you doing today, sir?",
+		"What can I do for you?",
+	]
 def main():
+	greet()
 	input_message = ""
 	input_words = []
 	while ("quit" not in input_words):
