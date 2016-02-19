@@ -105,6 +105,8 @@ def parseTimeWords(time_words):
 def find_ngrams(input_list, n):
 	'''Returns the set of n consecutive tuples from input_list'''
 	return zip(*[input_list[i:] for i in range(n)])
+
+import json
 def getWeather(feature, location="MA/Boston"):
 	api = "9e203c14c8a68a24/"
 	url_front = 'http://api.wunderground.com/api/'
@@ -119,9 +121,44 @@ def getWeather(feature, location="MA/Boston"):
 	#Almanac
 	#Planner_MMDDMMDD
 	#Yesterday
+	#TODO: Add extra weather lookups
+	#TODO: Save request to disk and only request again if it has been more than 30 minutes since last check
 	url = url_front + api + feature + url_penult + url_location + url_format
 	r = requests.get(url)
-	print(r.text)
+	response = json.loads(r.text)
+	parseWeatherAlmanacResponse(response)
+def parseWeatherConditionsResponse(response):
+	location = response['current_observation']['display_location']['full']
+	temp_f = response['current_observation']['temp_f']
+	feelslike_f = response['current_observation']['feelslike_f']
+	weather = response['current_observation']['weather']
+	wind_string = response['current_observation']['wind_string']
+	print('Right now in ' + location + ' it is ' + str(temp_f) + ' degrees out and it feels like ' + str(feelslike_f) + '.')
+	print("It's " + weather.lower() + " and the wind is blowing " + wind_string[0].lower() + wind_string[1:] + '.')
+
+def parseWeatherForecastResponse(response):
+	print("\n".join(
+		[
+			(elem['title'] + ': ' + elem['fcttext']) 
+			for elem in response['forecast']['txt_forecast']['forecastday']
+		]
+	))
+def parseWeatherAlmanacResponse(response):
+	print("For today's date, the normal high temperature is " + response['almanac']['temp_high']['normal']['F'] +
+			" degrees and the record was " + response['almanac']['temp_high']['record']['F'] +
+			", set in " + response['almanac']['temp_high']['recordyear'] +
+			".")
+	print("The normal low temperature is " + response['almanac']['temp_low']['normal']['F'] +
+			" and the record was " + response['almanac']['temp_low']['record']['F'] +
+			", set in " + response['almanac']['temp_low']['recordyear'] +
+			".")
+def parseWeatherPlannerResponse(response):
+	pass
+def parseWeatherYesterdayResponse(response):
+	pass
+def parseWeatherHourlyResponse(response):
+	pass
+
 def interpretMessage(word_list):
 	time_words = [
 		"morning"
@@ -161,7 +198,7 @@ def interpretMessage(word_list):
 				print(s)
 		print("I think you were asking about something relating to a specific time.")
 	if (any(s in word_list for s in ["weather","rain","sun","hot","cold","warm","snow","humid","pollen","temperature"])):
-		getWeather('conditions')
+		getWeather('almanac')
 	elif (any(s in word_list for s in ["calendar","agenda"])):
 		print("I will try to look at your schedule.")
 
@@ -185,6 +222,6 @@ def main():
 		cleaned_input = RemoveCapsPreserveNNP().run(cleaned_input)
 		input_words = cleaned_input.split(" ")
 		print("I cleaned the input, now it looks like: " + cleaned_input)
-		interpretMessage(cleaned_input)
+		interpretMessage(input_words)
 if __name__ == '__main__':
 	main()
