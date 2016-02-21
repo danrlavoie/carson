@@ -107,26 +107,42 @@ def find_ngrams(input_list, n):
 	return zip(*[input_list[i:] for i in range(n)])
 
 import json
-def getWeather(feature, location="MA/Boston"):
+def getWeather(feature, firstdate=1225, seconddate=1231, location="MA/Boston"):
 	api = "9e203c14c8a68a24/"
 	url_front = 'http://api.wunderground.com/api/'
 	url_penult = '/q/'
 	url_format = '.json'
 	url_location = location
-	url_feature = feature
-	#Current conditions: Conditions
-	#Forecast
-	#Forecast10day
 	#Hourly
-	#Almanac
 	#Planner_MMDDMMDD
 	#Yesterday
 	#TODO: Add extra weather lookups
 	#TODO: Save request to disk and only request again if it has been more than 30 minutes since last check
-	url = url_front + api + feature + url_penult + url_location + url_format
-	r = requests.get(url)
-	response = json.loads(r.text)
-	parseWeatherAlmanacResponse(response)
+	if(not checkForResponse(feature)):
+		filename = 'var\\' + feature + '.json'
+		with open(filename, 'r') as fp:
+			response = json.load(fp)	
+	else:
+		url = url_front + api + feature + url_penult + url_location + url_format
+		r = requests.get(url)
+		response = json.loads(r.text)
+	if feature == 'forecast':
+		parseWeatherForecastResponse(response)
+	elif feature == 'forecast10day':
+		parseWeatherForecastResponse(response)
+	elif feature == 'conditions':
+		parseWeatherConditionsResponse(response)
+	elif feature == 'almanac':
+		parseWeatherAlmanacResponse(response)
+	elif feature == 'hourly':
+		parseWeatherHourlyResponse(response)
+	elif feature == 'hourly10day':
+		parseWeatherHourlyResponse(response)
+	elif feature == 'planner':
+		parseWeatherPlannerResponse(response)
+	elif feature == 'yesterday':
+		parseWeatherYesterdayResponse(response)
+	storeResponse(feature, response)
 def parseWeatherConditionsResponse(response):
 	location = response['current_observation']['display_location']['full']
 	temp_f = response['current_observation']['temp_f']
@@ -157,8 +173,55 @@ def parseWeatherPlannerResponse(response):
 def parseWeatherYesterdayResponse(response):
 	pass
 def parseWeatherHourlyResponse(response):
-	pass
-
+	print("\n".join(
+		[
+			(elem['FCTTIME']['pretty'] + ': '  + 
+				elem['condition'] + ', ' + 
+				elem['temp']['english'] +  ' degrees. \n\t Wind from the ' +  
+				elem['wdir']['dir'] + ' at ' + 
+				elem['wspd']['english'] + ' miles per hour. Chance of precipition ' +
+				elem['pop'] + ' percent.')
+			for elem in response['hourly_forecast']
+		]
+	))
+import os.path
+import datetime as dt
+from datetime import datetime
+def checkForResponse(request):
+	'''Returns true if it has been more than 30 minutes since the request was run'''
+	filename = 'var\\' + request + '.json'
+	if (os.path.isfile(filename)):
+		t = os.path.getmtime(filename)
+		mod_time = datetime.fromtimestamp(t)
+		if (not(datetime.now() - mod_time > dt.timedelta(minutes=15))):
+			return False
+	return True
+def storeResponse(request, response):
+	filename = 'var\\' + request + '.json'
+	with open(filename, 'w') as fp:
+	    json.dump(response, fp)
+def getLocation(feature='weather'):
+	if(not checkForResponse('location')):
+		filename = 'var\\' + 'location' + '.json'
+		with open(filename, 'r') as fp:
+			response = json.load(fp)	
+	else:
+		url= 'http://ip-api.com/json'
+		r = requests.get(url)
+		response = json.loads(r.text)
+	parseLocationResponse(response)
+	storeResponse('location',response)
+	if feature == 'weather':
+		return response['region'] + '/' + response['city']
+def parseLocationResponse(response):
+	response['country']
+	response['region']
+	response['regionName']
+	response['city']
+	response['zip']
+	response['lat']
+	response['lon']
+	print(response['city'] + ", " + response['region'])
 def interpretMessage(word_list):
 	time_words = [
 		"morning"
@@ -198,11 +261,9 @@ def interpretMessage(word_list):
 				print(s)
 		print("I think you were asking about something relating to a specific time.")
 	if (any(s in word_list for s in ["weather","rain","sun","hot","cold","warm","snow","humid","pollen","temperature"])):
-		getWeather('almanac')
+		getWeather('forecast', location=getLocation())
 	elif (any(s in word_list for s in ["calendar","agenda"])):
 		print("I will try to look at your schedule.")
-
-
 import random
 def greet():
 	greeting_list = [
