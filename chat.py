@@ -264,6 +264,7 @@ def interpretMessage(word_list):
 		getWeather('forecast', location=getLocation())
 	elif (any(s in word_list for s in ["calendar","agenda"])):
 		print("I will try to look at your schedule.")
+def sampleFunction(myFunction, timeContext=datetime.now(), locationContext='Boston, MA')
 import random
 def greet():
 	greeting_list = [
