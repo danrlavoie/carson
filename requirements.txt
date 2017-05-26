@@ -4,3 +4,5 @@
 Pendulum
 random
 logging
+nltk
+textblob
