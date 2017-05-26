@@ -96,13 +96,6 @@ def interpretMessage(word_list):
 	elif (any(s in word_list for s in ["calendar","agenda"])):
 		print("I will try to look at your schedule.")
 import random
-def greet():
-	greeting_list = [
-		"Good morning, sir",
-		"How are you doing today, sir?",
-		"What can I do for you?",
-	]
-	print(random.choice(greeting_list))
 def main():
 	greet()
 	input_message = ""

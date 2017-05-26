@@ -1,0 +1,6 @@
+# This is an implicit value, here for clarity
+--index-url https://pypi.python.org/simple/
+
+Pendulum
+random
+logging
