@@ -23,8 +23,8 @@ def main():
 	while ("quit" not in input_words):
 		input_message = input('-')
 		print("Your input was: " + input_message)
-		cleaned_input = RemovePunct().run(input_message)
-		cleaned_input = RemoveCapsPreserveNNP().run(cleaned_input)
+		cleaned_input = TextParse().remove_punctuation(input_message)
+		cleaned_input = TextParse().remove_caps_preserve_nnp(cleaned_input)
 		input_words = cleaned_input.split(" ")
 		print("I cleaned the input, now it looks like: " + cleaned_input)
 		interpretMessage(input_words)
